@@ -1,0 +1,14 @@
+# Binaries
+/bin/
+/tinydb
+
+# Go build cache
+/build/
+*.out
+
+# Dependency directory
+/vendor/
+
+# IDE/editor config
+.idea/
+*.swp
