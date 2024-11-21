@@ -54,6 +54,14 @@ func (db *Database) InsertRow(tableName string, values []interface{}) error {
 	if len(values) != len(table.Schema.Columns) {
 		return errors.New("row does not match table schema")
 	}
+
+	for i, value := range values {
+		colType := table.Schema.Columns[i].Type
+		if !ValidateValue(value, colType) {
+			return fmt.Errorf("value %v does not match column type %s", value, colType)
+		}
+	}
+
 	table.Rows = append(table.Rows, Row{Values: values})
 	return nil
 }
@@ -77,5 +85,18 @@ func (db *Database) DebugPrint() {
 		for _, row := range table.Rows {
 			fmt.Println(row.Values)
 		}
+	}
+}
+
+func ValidateValue(value interface{}, colType string) bool {
+	switch colType {
+	case "int":
+		_, ok := value.(int)
+		return ok
+	case "string":
+		_, ok := value.(string)
+		return ok
+	default:
+		return false
 	}
 }
