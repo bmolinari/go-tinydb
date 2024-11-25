@@ -22,15 +22,23 @@ func main() {
 	fmt.Println(db.InsertRow("users", []interface{}{"invalid", "Alice"}))
 	fmt.Println(db.InsertRow("users", []interface{}{3, 12345}))
 
-	rows, err := db.SelectRows("users", []engine.Condition{{Column: "id", Value: 2}})
-	if err != nil {
-		fmt.Println("Error: ", err)
-	} else {
-		fmt.Println("-Query Result-")
-		for _, row := range rows {
-			fmt.Println(row.Values)
-		}
-	}
+	rows, err := db.SelectRows("users", []engine.Condition{
+		{Column: "id", Operator: "=", Value: 1},
+	})
+	fmt.Println("Query =", rows, err)
 
-	// db.DebugPrint()
+	rows, err = db.SelectRows("users", []engine.Condition{
+		{Column: "id", Operator: "!=", Value: 1},
+	})
+	fmt.Println("Query !=", rows, err)
+
+	rows, err = db.SelectRows("users", []engine.Condition{
+		{Column: "id", Operator: ">", Value: 1},
+	})
+	fmt.Println("Query >", rows, err)
+
+	rows, err = db.SelectRows("users", []engine.Condition{
+		{Column: "id", Operator: "<", Value: 2},
+	})
+	fmt.Println("Query <", rows, err)
 }

@@ -29,8 +29,9 @@ type Database struct {
 }
 
 type Condition struct {
-	Column string
-	Value  interface{}
+	Column   string
+	Operator string
+	Value    interface{}
 }
 
 func NewDatabase() *Database {
@@ -94,8 +95,46 @@ func (db *Database) SelectRows(tableName string, conditions []Condition) ([]Row,
 				return nil, fmt.Errorf("column %s does not exist", cond.Column)
 			}
 
-			if row.Values[colIndex] != cond.Value {
-				match = false
+			rowValue := row.Values[colIndex]
+			switch cond.Operator {
+			case "=":
+				if rowValue != cond.Value {
+					match = false
+					break
+				}
+			case "!=":
+				if rowValue == cond.Value {
+					match = false
+				}
+			case "<":
+				if intValue, ok := rowValue.(int); ok {
+					if condValue, ok := cond.Value.(int); ok {
+						if intValue >= condValue {
+							match = false
+						}
+					} else {
+						return nil, fmt.Errorf("value %v is not an int,", cond.Value)
+					}
+				} else {
+					return nil, fmt.Errorf("row value %v is not an int", rowValue)
+				}
+			case ">":
+				if intValue, ok := rowValue.(int); ok {
+					if condValue, ok := cond.Value.(int); ok {
+						if intValue <= condValue {
+							match = false
+						}
+					} else {
+						return nil, fmt.Errorf("value %v is not an int,", cond.Value)
+					}
+				} else {
+					return nil, fmt.Errorf("row value %v is not an int", rowValue)
+				}
+			default:
+				return nil, fmt.Errorf("unsupported operator %s", cond.Operator)
+			}
+
+			if !match {
 				break
 			}
 		}
