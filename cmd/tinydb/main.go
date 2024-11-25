@@ -21,10 +21,16 @@ func main() {
 	db.InsertRow("users", []interface{}{2, "Bob"})
 	fmt.Println(db.InsertRow("users", []interface{}{"invalid", "Alice"}))
 	fmt.Println(db.InsertRow("users", []interface{}{3, 12345}))
-	rows, _ := db.SelectRows("users")
-	for _, row := range rows {
-		fmt.Println(row.Values...)
+
+	rows, err := db.SelectRows("users", []engine.Condition{{Column: "id", Value: 2}})
+	if err != nil {
+		fmt.Println("Error: ", err)
+	} else {
+		fmt.Println("-Query Result-")
+		for _, row := range rows {
+			fmt.Println(row.Values)
+		}
 	}
 
-	db.DebugPrint()
+	// db.DebugPrint()
 }

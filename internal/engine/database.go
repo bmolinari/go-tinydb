@@ -28,6 +28,11 @@ type Database struct {
 	Tables map[string]*Table
 }
 
+type Condition struct {
+	Column string
+	Value  interface{}
+}
+
 func NewDatabase() *Database {
 	return &Database{
 		Tables: make(map[string]*Table),
@@ -66,12 +71,41 @@ func (db *Database) InsertRow(tableName string, values []interface{}) error {
 	return nil
 }
 
-func (db *Database) SelectRows(tableName string) ([]Row, error) {
+func (db *Database) SelectRows(tableName string, conditions []Condition) ([]Row, error) {
 	table, exists := db.Tables[tableName]
 	if !exists {
 		return nil, errors.New("table does not exist")
 	}
-	return table.Rows, nil
+
+	var result []Row
+
+	for _, row := range table.Rows {
+		match := true
+		for _, cond := range conditions {
+			colIndex := -1
+			for i, col := range table.Schema.Columns {
+				if col.Name == cond.Column {
+					colIndex = i
+					break
+				}
+			}
+
+			if colIndex == -1 {
+				return nil, fmt.Errorf("column %s does not exist", cond.Column)
+			}
+
+			if row.Values[colIndex] != cond.Value {
+				match = false
+				break
+			}
+		}
+
+		if match {
+			result = append(result, row)
+		}
+	}
+
+	return result, nil
 }
 
 func (db *Database) DebugPrint() {
